@@ -14,56 +14,47 @@ El lenguaje utilizado para este proyecto es C++ y la Librería de RayLib para la
 # Estructura de Carpetas.
 ProyectoSO/
 │
-├── README.md
-├── CMakeLists.txt (opcional si usas CMake)
+├── assets/                     
+│   ├── fonts/
+│   ├── textures/
 │
-├── docs/                      
-│   ├── manual_usuario.md
-│   ├── manual_tecnico.md
-│   ├── diagramas/
-│   │   ├── productor_consumidor.png
-│   │   ├── filosofos.png
+├── data/                        
+│   ├── numeros.txt              
 │
-├── data/                     
-│   ├── numeros.txt            
+├── src/                         
 │
-├── src/                      
+│   ├── main.cpp                 
 │
-│   ├── main.cpp               
+│   ├── app/                     
+│   │   ├── Application.hpp
+│   │   ├── Application.cpp
 │
-│   ├── core/                  
-│   │   ├── ThreadUtils.hpp
-│   │   ├── Logger.hpp
+│   ├── scenes/                  
+│   │   ├── Scene.hpp           
+│   │   ├── MenuScene.hpp
+│   │   ├── MenuScene.cpp
+│   │   ├── PCScene.hpp
+│   │   ├── PCScene.cpp
+│   │   ├── FilosofosScene.hpp
+│   │   ├── FilosofosScene.cpp
 │
-│   ├── productor_consumidor/  
+│   ├── pc/                      
 │   │   ├── Buffer.hpp
-│   │   ├── Buffer.cpp
 │   │   ├── Productor.hpp
-│   │   ├── Productor.cpp
 │   │   ├── Consumidor.hpp
-│   │   ├── Consumidor.cpp
-│   │   ├── PCController.hpp   
-│   │   ├── PCController.cpp
+│   │   ├── PCController.hpp
 │
-│   ├── filosofos/            
+│   ├── filosofos/              
 │   │   ├── Filosofo.hpp
-│   │   ├── Filosofo.cpp
 │   │   ├── Tenedor.hpp
-│   │   ├── Tenedor.cpp
 │   │   ├── Mesa.hpp
-│   │   ├── Mesa.cpp
 │   │   ├── FilosofosController.hpp
-│   │   ├── FilosofosController.cpp
 │
-│   ├── ui/                    
-│   │   ├── Menu.hpp
-│   │   ├── Menu.cpp
-│   │   ├── AnimacionPC.hpp
-│   │   ├── AnimacionPC.cpp
-│   │   ├── AnimacionFilosofos.hpp
-│   │   ├── AnimacionFilosofos.cpp
+│   ├── utils/                   
+│       ├── Colors.hpp
+│       ├── Helpers.hpp
 │
-├── build/                     
-|
+├── build/                       
+├── bin/                        
 │
-└── bin/                       
+└── README.md                     
