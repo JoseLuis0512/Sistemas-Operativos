@@ -66,7 +66,7 @@ void PCScene::update()
 {
     timer += GetFrameTime(); // - Acumulamos el tiempo transcurrido desde el último frame
 
-    Rectangle btnCargar = {300, 510, 200, 40}; // - Rectángulo del botón de carga
+    Rectangle btnCargar = {300, 450, 200, 40}; // - Rectángulo del botón
     Vector2 mouse = GetMousePosition();        // - Posición actual del cursor
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && // - Detectamos click izquierdo
@@ -90,12 +90,12 @@ void PCScene::draw()
     // --------------------------------------------------
     // Título
     // --------------------------------------------------
-    texto("PRODUCTOR - CONSUMIDOR", 210, 40, 28, BLACK); // - Título principal de la escena
+    texto("PRODUCTOR - CONSUMIDOR", 240, 40, 28, BLACK); // - Título principal de la escena
 
     // --------------------------------------------------
     // Botón para cargar archivo
     // --------------------------------------------------
-    Rectangle btnCargar = {300, 510, 200, 40}; // - Rectángulo del botón
+    Rectangle btnCargar = {300, 450, 200, 40}; // - Rectángulo del botón
     Vector2 mouse = GetMousePosition();        // - Posición del cursor para hover
     Color colorBtn = CheckCollisionPointRec(mouse, btnCargar)
                          ? DARKGRAY
@@ -103,19 +103,19 @@ void PCScene::draw()
 
     DrawRectangleRec(btnCargar, colorBtn);        // - Fondo del botón
     DrawRectangleLinesEx(btnCargar, 2, DARKGRAY); // - Borde del botón
-    texto("Cargar archivo", 330, 522, 16, BLACK); // - Texto del botón
+    texto("Cargar archivo", 335, 460, 18, BLACK); // - Texto del botón
 
     // --------------------------------------------------
     // Nombre del archivo cargado
     // --------------------------------------------------
     if (archivoActual.empty()) // - Sin archivo cargado aún
     {
-        texto("Sin archivo cargado", 270, 562, 14, GRAY); // - Indicamos que no hay archivo
+        texto("Sin archivo cargado", 335, 495, 14, BLACK); // - Indicamos que no hay archivo
     }
     else
     {
         std::string nombre = archivoActual.substr(archivoActual.find_last_of("\\/") + 1); // - Solo el nombre del archivo
-        texto(TextFormat("Archivo: %s", nombre.c_str()), 190, 562, 14, DARKGREEN);        // - Mostramos el nombre
+        texto(TextFormat("Archivo: %s", nombre.c_str()), 335, 495, 14, DARKGREEN);        // - Mostramos el nombre
     }
 
     // --------------------------------------------------
@@ -123,8 +123,8 @@ void PCScene::draw()
     // --------------------------------------------------
     if (!controller.tieneArchivo())
     {
-        texto("Carga un archivo .txt con numeros separados por comas", 80, 280, 16, GRAY); // - Instrucción al usuario
-        return;                                                                            // - No hay nada más que dibujar
+        texto("Carga un archivo .txt con numeros separados por comas", 120, 280, 20, BLACK); // - Instrucción al usuario
+        return;                                                                              // - No hay nada más que dibujar
     }
 
     // --------------------------------------------------
