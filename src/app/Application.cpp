@@ -13,21 +13,21 @@ Application::Application()
 // - Destructor
 Application::~Application()
 {
-    delete currenScene; // - Liberamos memoria de la escena actual.
-    CloseWindow();      // - Cerramos la ventana.
+    delete currentScene; // - Liberamos memoria de la escena actual.
+    CloseWindow();       // - Cerramos la ventana.
 }
 
 // - Cambio de escena.
 void Application::setScene(Scene *newScene)
 {
-    delete currenScene;      // - Eliminamos la escena anterior.
+    delete currentScene;     // - Eliminamos la escena anterior.
     currentScene = newScene; // - Asignamos la nueva escena.
 }
 
 // - Loop Principal.
 void Application::run()
 {
-    while (!WindowsShouldClose())
+    while (!WindowShouldClose())
     {
         currentScene->update(); // - Actualizamos la escena.
 
