@@ -3,7 +3,7 @@
 #include "raylib.h"               // - Librería para la parte gráfica.
 
 // Estas clases las crearemos después
-// #include "PCScene.hpp"
+#include "PCScene.hpp"
 // #include "FilosofosScene.hpp"
 
 // - Constructor
@@ -27,14 +27,14 @@ void MenuScene::update()
         // - Click en Productos-Consumidor.
         if (CheckCollisionPointRec(mouse, btnPC))
         {
-            // - Se realiza el cambio de escena (Se implementará luego).
-            // app->setScene(new PCScene.hpp)
+
+            app->setScene(new PCScene(app));
         }
 
         // - Click en Filosofos-Comensales
         if (CheckCollisionPointRec(mouse, btnFilosofos))
         {
-            // app-setScene(new, FilosofosScene(app))
+            // app-setScene(new FilosofosScene(app))
         }
     }
 }
