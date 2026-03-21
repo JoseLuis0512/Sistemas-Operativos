@@ -46,8 +46,8 @@ void MenuScene::draw()
     DrawText("PROYECTO SISTEMAS OPERATIVOS", 120, 100, 30, BLACK);
 
     // - Botones
-    Rectangle btnPC = {300, 200, 200, 5};
-    Rectangle btnFilosofos = {300, 200, 200, 5};
+    Rectangle btnPC = {300, 200, 200, 50};
+    Rectangle btnFilosofos = {300, 400, 200, 50};
 
     // - Dibujamos los botones.
     DrawRectangleRec(btnPC, LIGHTGRAY);
@@ -55,7 +55,7 @@ void MenuScene::draw()
 
     // - Texto de botones.
     DrawText("Productor/Consumidor", 310, 215, 15, BLACK);
-    DrawText("Filósofos/Comensales", 310, 215, 15, BLACK);
+    DrawText("Filósofos/Comensales", 310, 415, 15, BLACK);
 
     // - Hover de los botones.
     Vector2 mouse = GetMousePosition();
@@ -66,6 +66,6 @@ void MenuScene::draw()
 
     if (CheckCollisionPointRec(mouse, btnFilosofos))
     {
-        DrawRectangleLinesEx(btnPC, 3, RED);
+        DrawRectangleLinesEx(btnFilosofos, 3, RED);
     }
 }

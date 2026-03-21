@@ -1,237 +1,195 @@
-#include "PCScene.hpp"            // - Incluimos el header de PCScene con sus declaraciones
-#include "../app/Application.hpp" // - Incluimos Application para poder interactuar con la app
-#include "raylib.h"               // - Incluimos raylib para funciones gráficas y de tiempo
-#include <cstdlib>                // - Incluimos cstdlib para funciones como std::srand
-#include <ctime>                  // - Incluimos ctime para obtener la hora actual con std::time
-#include <thread>                 // - Incluimos thread para manejo de hilos
-#include <mutex>                  // - Incluimos mutex para sincronización entre hilos
-#include <condition_variable>     // - Incluimos condition_variable para coordinar hilos
-#include <atomic>                 // - Incluimos atomic para el flag de control seguro entre hilos
+#include "PCScene.hpp"                // - Incluimos el header de PCScene con sus declaraciones
+#include "../app/Application.hpp"     // - Incluimos Application para poder interactuar con la app
+#include "raylib.h"                   // - Incluimos raylib para funciones gráficas y de tiempo
+#include "../utils/tinyfiledialogs.h" // - Incluimos tinyfiledialogs para el diálogo de archivo nativo sin conflictos con raylib
 
 // --------------------------------------------------
 // Constructor
 // --------------------------------------------------
 PCScene::PCScene(Application *app)
+    : controller(10) // - Inicializamos el controlador solo con el tamaño del buffer, sin archivo aún
 {
-    this->app = app; // - Guardamos el puntero a la aplicación en el atributo de instancia
-
-    maxSize = 10;   // - Definimos el tamaño máximo del buffer compartido
-    running = true; // - Indicamos que los hilos deben comenzar a ejecutarse
-
-    std::srand(std::time(nullptr)); // - Inicializamos la semilla de rand con la hora actual
-
-    producerThread = std::thread(&PCScene::producer, this);           // - Creamos el hilo del productor
-    consumerEvenThread = std::thread(&PCScene::consumerEven, this);   // - Creamos el hilo del consumidor de pares
-    consumerOddThread = std::thread(&PCScene::consumerOdd, this);     // - Creamos el hilo del consumidor de impares
-    consumerPrimeThread = std::thread(&PCScene::consumerPrime, this); // - Creamos el hilo del consumidor de primos
+    this->app = app;    // - Guardamos el puntero a la aplicación en el atributo de instancia
+    this->timer = 0.0f; // - Inicializamos el acumulador de tiempo en cero
 }
 
 // --------------------------------------------------
-// Destructor: detener threads y unirlos
+// Abre el diálogo nativo del sistema para seleccionar un .txt
 // --------------------------------------------------
-PCScene::~PCScene()
+std::string PCScene::abrirDialogoArchivo()
 {
-    running = false; // - Marcamos el flag para indicar que los hilos deben detenerse
+    // - Definimos los filtros de archivo aceptados (solo .txt)
+    const char *filtros[] = {"*.txt"};
 
-    notEmpty.notify_all(); // - Despertamos todos los hilos que esperan en notEmpty para que puedan salir
-    notFull.notify_all();  // - Despertamos todos los hilos que esperan en notFull para que puedan salir
+    // - Llamamos a tinyfiledialogs para abrir el diálogo nativo del sistema operativo
+    const char *resultado = tinyfd_openFileDialog(
+        "Seleccionar archivo de numeros", // - Título del diálogo
+        "",                               // - Ruta inicial (vacía = carpeta actual)
+        1,                                // - Número de filtros
+        filtros,                          // - Array de filtros
+        "Archivos de texto (*.txt)",      // - Descripción del filtro
+        0                                 // - 0 = selección de un solo archivo
+    );
 
-    producerThread.join();      // - Esperamos a que el hilo del productor termine completamente
-    consumerEvenThread.join();  // - Esperamos a que el hilo del consumidor de pares termine
-    consumerOddThread.join();   // - Esperamos a que el hilo del consumidor de impares termine
-    consumerPrimeThread.join(); // - Esperamos a que el hilo del consumidor de primos termine
+    if (resultado)                     // - Si el usuario seleccionó un archivo (no canceló)
+        return std::string(resultado); // - Retornamos la ruta como string
+
+    return ""; // - Si el usuario canceló, retornamos cadena vacía
 }
 
 // --------------------------------------------------
-// Función para verificar si un número es primo
-// --------------------------------------------------
-bool PCScene::isPrime(int n)
-{
-    if (n <= 1) // - Los números menores o iguales a 1 no son primos
-        return false;
-    for (int i = 2; i * i <= n; i++) // - Iteramos desde 2 hasta la raíz cuadrada de n
-        if (n % i == 0)              // - Si n es divisible por i, no es primo
-            return false;
-    return true; // - Si no encontramos divisores, el número es primo
-}
-
-// --------------------------------------------------
-// Productor
-// --------------------------------------------------
-void PCScene::producer()
-{
-    while (running) // - El hilo sigue produciendo mientras running sea verdadero
-    {
-        std::unique_lock<std::mutex> lock(mtx); // - Adquirimos el mutex para acceder al buffer de forma segura
-
-        notFull.wait(lock, [this]() // - Esperamos si el buffer está lleno o si debemos detenernos
-                     { return buffer.size() < maxSize || !running; });
-
-        if (!running) // - Si se indicó detener, salimos del bucle
-            break;
-
-        int num = GetRandomValue(1, 100); // - Generamos un número aleatorio entre 1 y 100
-        buffer.push_back(num);            // - Insertamos el número al final del buffer
-
-        lock.unlock();         // - Liberamos el mutex antes de notificar
-        notEmpty.notify_all(); // - Notificamos a los consumidores que hay datos disponibles
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(500)); // - Pausamos 500 ms antes de producir de nuevo
-    }
-}
-
-// --------------------------------------------------
-// Consumidor de números pares (no primos)
-// --------------------------------------------------
-void PCScene::consumerEven()
-{
-    while (running) // - El hilo sigue consumiendo mientras running sea verdadero
-    {
-        std::unique_lock<std::mutex> lock(mtx); // - Adquirimos el mutex para acceder al buffer de forma segura
-
-        notEmpty.wait(lock, [this]() // - Esperamos si el buffer está vacío o si debemos detenernos
-                      { return !buffer.empty() || !running; });
-
-        if (!running) // - Si se indicó detener, salimos del bucle
-            break;
-
-        for (auto it = buffer.begin(); it != buffer.end(); ++it) // - Recorremos el buffer en busca del objetivo
-        {
-            if (*it % 2 == 0 && !isPrime(*it)) // - Buscamos un número par que no sea primo
-            {
-                sumEven += *it;   // - Acumulamos el valor en la suma de pares
-                buffer.erase(it); // - Eliminamos el elemento del buffer
-                break;            // - Salimos del for tras consumir un elemento
-            }
-        }
-
-        lock.unlock();        // - Liberamos el mutex antes de notificar
-        notFull.notify_all(); // - Notificamos al productor que hay espacio disponible
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(700)); // - Pausamos 700 ms antes de consumir de nuevo
-    }
-}
-
-// --------------------------------------------------
-// Consumidor de números impares (no primos)
-// --------------------------------------------------
-void PCScene::consumerOdd()
-{
-    while (running) // - El hilo sigue consumiendo mientras running sea verdadero
-    {
-        std::unique_lock<std::mutex> lock(mtx); // - Adquirimos el mutex para acceder al buffer de forma segura
-
-        notEmpty.wait(lock, [this]() // - Esperamos si el buffer está vacío o si debemos detenernos
-                      { return !buffer.empty() || !running; });
-
-        if (!running) // - Si se indicó detener, salimos del bucle
-            break;
-
-        for (auto it = buffer.begin(); it != buffer.end(); ++it) // - Recorremos el buffer en busca del objetivo
-        {
-            if (*it % 2 != 0 && !isPrime(*it)) // - Buscamos un número impar que no sea primo
-            {
-                sumOdd += *it;    // - Acumulamos el valor en la suma de impares
-                buffer.erase(it); // - Eliminamos el elemento del buffer
-                break;            // - Salimos del for tras consumir un elemento
-            }
-        }
-
-        lock.unlock();        // - Liberamos el mutex antes de notificar
-        notFull.notify_all(); // - Notificamos al productor que hay espacio disponible
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(700)); // - Pausamos 700 ms antes de consumir de nuevo
-    }
-}
-
-// --------------------------------------------------
-// Consumidor de números primos
-// --------------------------------------------------
-void PCScene::consumerPrime()
-{
-    while (running) // - El hilo sigue consumiendo mientras running sea verdadero
-    {
-        std::unique_lock<std::mutex> lock(mtx); // - Adquirimos el mutex para acceder al buffer de forma segura
-
-        notEmpty.wait(lock, [this]() // - Esperamos si el buffer está vacío o si debemos detenernos
-                      { return !buffer.empty() || !running; });
-
-        if (!running) // - Si se indicó detener, salimos del bucle
-            break;
-
-        for (auto it = buffer.begin(); it != buffer.end(); ++it) // - Recorremos el buffer en busca del objetivo
-        {
-            if (isPrime(*it)) // - Buscamos un número primo
-            {
-                sumPrime += *it;  // - Acumulamos el valor en la suma de primos
-                buffer.erase(it); // - Eliminamos el elemento del buffer
-                break;            // - Salimos del for tras consumir un elemento
-            }
-        }
-
-        lock.unlock();        // - Liberamos el mutex antes de notificar
-        notFull.notify_all(); // - Notificamos al productor que hay espacio disponible
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(700)); // - Pausamos 700 ms antes de consumir de nuevo
-    }
-}
-
-// --------------------------------------------------
-// Update (solo animación, ya no toca buffer)
+// Update: detecta click en botón y acumula tiempo
 // --------------------------------------------------
 void PCScene::update()
 {
     timer += GetFrameTime(); // - Acumulamos el tiempo transcurrido desde el último frame
+
+    Rectangle btnCargar = {300, 500, 200, 40}; // - Rectángulo del botón de carga
+    Vector2 mouse = GetMousePosition();        // - Posición actual del cursor
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && // - Detectamos click izquierdo
+        CheckCollisionPointRec(mouse, btnCargar))  // - Verificamos que fue sobre el botón
+    {
+        std::string ruta = abrirDialogoArchivo(); // - Abrimos el diálogo para seleccionar el archivo
+
+        if (!ruta.empty()) // - Si el usuario seleccionó un archivo válido
+        {
+            archivoActual = ruta;           // - Guardamos la ruta para mostrarla en pantalla
+            controller.cargarArchivo(ruta); // - Iniciamos el productor con el archivo seleccionado
+        }
+    }
 }
 
 // --------------------------------------------------
-// Draw: dibuja el buffer, los números y sumas
+// Draw: dibuja el buffer, estados, sumas y botón
 // --------------------------------------------------
 void PCScene::draw()
 {
+    // --------------------------------------------------
+    // Título
+    // --------------------------------------------------
     DrawText("PRODUCTOR - CONSUMIDOR", 250, 50, 30, BLACK); // - Dibujamos el título de la escena
 
-    int startX = 100; // - Posición X inicial donde comenzamos a dibujar las celdas del buffer
-    int startY = 200; // - Posición Y inicial donde comenzamos a dibujar las celdas del buffer
-    int boxSize = 50; // - Tamaño en píxeles de cada celda del buffer
+    // --------------------------------------------------
+    // Botón para cargar archivo
+    // --------------------------------------------------
+    Rectangle btnCargar = {300, 500, 200, 40}; // - Rectángulo del botón de carga
+    Vector2 mouse = GetMousePosition();        // - Posición del cursor para efecto hover
+    Color colorBtn = CheckCollisionPointRec(mouse, btnCargar)
+                         ? DARKGRAY
+                         : LIGHTGRAY; // - Color más oscuro al pasar el cursor
 
-    std::unique_lock<std::mutex> lock(mtx); // - Adquirimos el mutex para leer el buffer de forma segura
+    DrawRectangleRec(btnCargar, colorBtn);           // - Dibujamos el fondo del botón
+    DrawRectangleLinesEx(btnCargar, 2, BLACK);       // - Dibujamos el borde del botón
+    DrawText("Cargar archivo", 325, 512, 18, BLACK); // - Texto del botón
+
+    // --------------------------------------------------
+    // Nombre del archivo cargado
+    // --------------------------------------------------
+    if (archivoActual.empty()) // - Si aún no se cargó ningún archivo
+    {
+        DrawText("Sin archivo cargado", 270, 555, 16, GRAY); // - Indicamos que no hay archivo
+    }
+    else
+    {
+        std::string nombre = archivoActual.substr(archivoActual.find_last_of("\\/") + 1); // - Extraemos solo el nombre del archivo
+        DrawText(TextFormat("Archivo: %s", nombre.c_str()), 200, 555, 16, DARKGREEN);     // - Mostramos el nombre
+    }
+
+    // --------------------------------------------------
+    // Si no hay archivo, mostramos instrucción y salimos
+    // --------------------------------------------------
+    if (!controller.tieneArchivo())
+    {
+        DrawText("Carga un archivo .txt con numeros separados por comas",
+                 100, 280, 18, GRAY); // - Instrucción al usuario
+        return;                       // - No hay nada más que dibujar
+    }
+
+    // --------------------------------------------------
+    // Obtener snapshot del buffer para dibujarlo
+    // --------------------------------------------------
+    Buffer *buf = controller.getBuffer();        // - Puntero al buffer compartido
+    std::vector<int> snapshot = buf->snapshot(); // - Copia segura del buffer para dibujar
+    int maxSize = buf->getMaxSize();             // - Tamaño máximo del buffer
+    Productor *prod = controller.getProductor(); // - Puntero al productor
+
+    // --------------------------------------------------
+    // Dibujar celdas del buffer
+    // --------------------------------------------------
+    int startX = 100; // - Posición X inicial de las celdas
+    int startY = 150; // - Posición Y inicial de las celdas
+    int boxSize = 50; // - Tamaño en píxeles de cada celda
 
     for (int i = 0; i < maxSize; i++) // - Iteramos por cada posición posible del buffer
     {
         Rectangle box = {
-            // - Definimos el rectángulo de la celda actual
             (float)(startX + i * (boxSize + 10)), // - Posición X con espaciado entre celdas
-            (float)startY,                        // - Posición Y fija para todas las celdas
+            (float)startY,                        // - Posición Y fija
             (float)boxSize,                       // - Ancho de la celda
             (float)boxSize                        // - Alto de la celda
         };
 
-        if (i < (int)buffer.size()) // - Si hay un elemento en esta posición, lo dibujamos con color
+        if (i < (int)snapshot.size()) // - Si hay un elemento en esta posición lo dibujamos
         {
-            int val = buffer[i]; // - Obtenemos el valor del elemento actual
-            Color color = GREEN; // - Color por defecto (no debería usarse, solo como fallback)
+            int val = snapshot[i]; // - Valor del elemento
+            Color color = GREEN;   // - Color por defecto (fallback)
 
-            if (isPrime(val)) // - Si es primo, usamos rojo
+            if (esPrimo(val)) // - Primo: rojo (prioridad más alta)
                 color = RED;
-            else if (val % 2 == 0) // - Si es par (y no primo), usamos azul
+            else if (esPar(val)) // - Par no primo: azul
                 color = BLUE;
-            else // - Si es impar (y no primo), usamos naranja
+            else // - Impar no primo: naranja
                 color = ORANGE;
 
-            DrawRectangleRec(box, color);                                       // - Dibujamos la celda con el color asignado
-            DrawText(TextFormat("%d", val), box.x + 10, box.y + 15, 20, BLACK); // - Dibujamos el número dentro de la celda
+            DrawRectangleRec(box, color);                                       // - Celda con color
+            DrawText(TextFormat("%d", val), box.x + 10, box.y + 15, 20, BLACK); // - Número dentro
         }
         else
         {
-            DrawRectangleLinesEx(box, 2, GRAY); // - Si la celda está vacía, dibujamos solo su contorno
+            DrawRectangleLinesEx(box, 2, GRAY); // - Celda vacía: solo contorno
         }
     }
 
-    lock.unlock(); // - Liberamos el mutex al terminar de leer el buffer
+    // --------------------------------------------------
+    // Leyenda de colores
+    // --------------------------------------------------
+    DrawRectangle(100, 220, 20, 20, RED);
+    DrawText("Primo", 125, 222, 16, BLACK); // - Leyenda primo
+    DrawRectangle(200, 220, 20, 20, BLUE);
+    DrawText("Par", 225, 222, 16, BLACK); // - Leyenda par
+    DrawRectangle(280, 220, 20, 20, ORANGE);
+    DrawText("Impar", 305, 222, 16, BLACK); // - Leyenda impar
 
-    DrawText(TextFormat("Elementos: %d / %d", (int)buffer.size(), maxSize), 300, 300, 20, BLACK); // - Mostramos ocupación actual del buffer
-    DrawText(TextFormat("Suma pares: %d", sumEven), 100, 400, 20, BLUE);                          // - Mostramos la suma acumulada de pares
-    DrawText(TextFormat("Suma impares: %d", sumOdd), 100, 430, 20, ORANGE);                       // - Mostramos la suma acumulada de impares
-    DrawText(TextFormat("Suma primos: %d", sumPrime), 100, 460, 20, RED);                         // - Mostramos la suma acumulada de primos
+    // --------------------------------------------------
+    // Estado del productor
+    // --------------------------------------------------
+    Color colorProd = prod->isBlocked() ? RED : GREEN;                       // - Rojo si bloqueado
+    DrawText("Productor:", 100, 260, 20, BLACK);                             // - Etiqueta
+    DrawText(prod->isBlocked() ? "BLOQUEADO (buffer lleno)" : "PRODUCIENDO", // - Estado textual
+             220, 260, 20, colorProd);
+
+    // --------------------------------------------------
+    // Ocupación del buffer
+    // --------------------------------------------------
+    DrawText(TextFormat("Buffer: %d / %d", (int)snapshot.size(), maxSize),
+             100, 290, 20, BLACK); // - Mostramos ocupación actual
+
+    // --------------------------------------------------
+    // Estado y sumas de cada consumidor
+    // --------------------------------------------------
+    auto &consumidores = controller.getConsumidores(); // - Lista de consumidores
+    int offsetY = 330;                                 // - Posición Y inicial
+
+    for (auto &c : consumidores) // - Iteramos sobre cada consumidor
+    {
+        Color colorC = c->isBlocked() ? GRAY : GREEN;        // - Gris si bloqueado
+        DrawText(TextFormat("%-8s", c->getNombre().c_str()), // - Nombre del consumidor
+                 100, offsetY, 20, BLACK);
+        DrawText(c->isBlocked() ? "ESPERANDO" : "ACTIVO", // - Estado
+                 230, offsetY, 20, colorC);
+        DrawText(TextFormat("Suma: %d", c->getSuma()), // - Suma acumulada
+                 370, offsetY, 20, BLACK);
+        offsetY += 30; // - Siguiente consumidor
+    }
 }
