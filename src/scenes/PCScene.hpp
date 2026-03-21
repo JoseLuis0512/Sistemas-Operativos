@@ -3,6 +3,7 @@
 
 #include "Scene.hpp"              // - Incluimos la clase base Scene de la que PCScene heredará
 #include "../pc/PCController.hpp" // - Incluimos el controlador que gestiona productor, consumidores y buffer
+#include "raylib.h"               // - Incluimos raylib para el tipo Font
 #include <string>                 // - Incluimos string para guardar la ruta del archivo cargado
 
 class Application; // - Forward declaration: le decimos al compilador que existirá la clase Application
@@ -14,12 +15,16 @@ private:
     PCController controller;   // - Controlador que encapsula toda la lógica de productor y consumidores
     float timer;               // - Acumula el tiempo transcurrido frame a frame para animaciones
     std::string archivoActual; // - Ruta del archivo actualmente cargado (vacía si no hay ninguno)
+    Font fuente;               // - Fuente personalizada cargada desde archivo .ttf
 
-    std::string abrirDialogoArchivo(); // - Abre el diálogo de Windows para seleccionar un archivo .txt
+    std::string abrirDialogoArchivo(); // - Abre el diálogo del sistema para seleccionar un archivo .txt
+
+    // - Wrapper de DrawTextEx para simplificar el uso de la fuente en toda la escena
+    void texto(const char *txt, float x, float y, float size, Color color) const;
 
 public:
     PCScene(Application *app); // - Constructor: recibe un puntero a la aplicación
-    ~PCScene() = default;      // - Destructor: PCController limpia sus propios recursos automáticamente
+    ~PCScene();                // - Destructor: libera la fuente cargada en memoria
 
     void update() override; // - Método obligatorio de Scene: ejecuta la lógica de la escena
     void draw() override;   // - Método obligatorio de Scene: renderiza la escena
