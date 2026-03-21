@@ -57,4 +57,25 @@ ProyectoSO/
 ├── build/                       
 ├── bin/                        
 │
-└── README.md                     
+└── README.md        
+
+## 🚀 Cómo ejecutar el proyecto
+
+### Requisitos
+- Tener raylib instalado en:
+  C:\raylib
+
+### Pasos
+
+1. Crear carpeta build:
+   mkdir build
+   cd build
+
+2. Generar proyecto:
+   cmake ..
+
+3. Compilar:
+   cmake --build .
+
+4. Ejecutar:
+   ProyectoSO.exe
