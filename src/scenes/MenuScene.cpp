@@ -44,8 +44,8 @@ void MenuScene::update()
 {
     Vector2 mouse = GetMousePosition(); // - Obtenemos la posición actual del cursor.
 
-    Rectangle btnPC = {300, 250, 200, 50};        // - Botón de Productor/Consumidor.
-    Rectangle btnFilosofos = {300, 350, 200, 50}; // - Botón de Filósofos/Comensales.
+    Rectangle btnPC = {190, 200, 200, 50};        // - Rectángulo del botón PC.
+    Rectangle btnFilosofos = {410, 200, 200, 50}; // - Rectángulo del botón Filósofos.
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) // - Detectamos click izquierdo.
     {
@@ -69,13 +69,13 @@ void MenuScene::draw()
     // --------------------------------------------------
     // Título
     // --------------------------------------------------
-    texto("PROYECTO SISTEMAS OPERATIVOS", 105, 120, 26, BLACK); // - Título principal del menú.
+    texto("PROYECTO SISTEMAS OPERATIVOS", 180, 100, 32, BLACK); // - Título principal del menú.
 
     // --------------------------------------------------
     // Botones
     // --------------------------------------------------
-    Rectangle btnPC = {300, 250, 200, 50};        // - Rectángulo del botón PC.
-    Rectangle btnFilosofos = {300, 350, 200, 50}; // - Rectángulo del botón Filósofos.
+    Rectangle btnPC = {190, 200, 200, 50};        // - Rectángulo del botón PC.
+    Rectangle btnFilosofos = {410, 200, 200, 50}; // - Rectángulo del botón Filósofos.
 
     Vector2 mouse = GetMousePosition(); // - Posición del cursor para efectos hover.
 
@@ -85,7 +85,7 @@ void MenuScene::draw()
     Color colorPC = CheckCollisionPointRec(mouse, btnPC) ? DARKGRAY : LIGHTGRAY; // - Color hover.
     DrawRectangleRec(btnPC, colorPC);                                            // - Fondo del botón.
     DrawRectangleLinesEx(btnPC, 2, DARKGRAY);                                    // - Borde del botón.
-    texto("Productor/Consumidor", 308, 265, 15, BLACK);                          // - Texto del botón.
+    texto("Productor/Consumidor", 205, 210, 18, BLACK);                          // - Texto del botón.
 
     // --------------------------------------------------
     // Botón Filósofos/Comensales
@@ -93,7 +93,7 @@ void MenuScene::draw()
     Color colorFil = CheckCollisionPointRec(mouse, btnFilosofos) ? DARKGRAY : LIGHTGRAY; // - Color hover.
     DrawRectangleRec(btnFilosofos, colorFil);                                            // - Fondo del botón.
     DrawRectangleLinesEx(btnFilosofos, 2, DARKGRAY);                                     // - Borde del botón.
-    texto("Filosofos/Comensales", 310, 365, 15, BLACK);                                  // - Texto del botón.
+    texto("Filosofos/Comensales", 425, 210, 18, BLACK);                                  // - Texto del botón.
 
     // --------------------------------------------------
     // Borde rojo al hacer hover sobre cualquier botón
@@ -103,4 +103,12 @@ void MenuScene::draw()
 
     if (CheckCollisionPointRec(mouse, btnFilosofos))
         DrawRectangleLinesEx(btnFilosofos, 3, RED); // - Borde rojo hover Filósofos.
+
+    // --------------------------------------------------
+    // Miembros del equipo de trabajo.
+    // --------------------------------------------------
+    texto("David Alconero Lepe         - 1216123", 20, 450, 15, BLACK);
+    texto("Jose Luis Enriquez Barillas - 1053223", 20, 475, 15, BLACK);
+    texto("Anthony Hernandez Perez     - 1086223", 20, 500, 15, BLACK);
+    texto("Ana Sofia Siguenza Aguilar  - 1333123", 20, 525, 15, BLACK);
 }
