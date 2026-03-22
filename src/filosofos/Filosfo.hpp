@@ -17,21 +17,22 @@ enum class EstadoFilosofo
 class Filosofo
 {
 private:
-    int id;                    // - Identificador único del filósofo
-    std::string nombre;        // - Nombre del filósofo para mostrar en pantalla
-    Tenedor *tenedorIzq;       // - Puntero al tenedor de su izquierda
-    Tenedor *tenedorDer;       // - Puntero al tenedor de su derecha
-    std::thread hilo;          // - Hilo que ejecuta el ciclo de vida del filósofo
-    std::atomic<bool> running; // - Flag que indica si el hilo debe seguir ejecutándose
-    int vecesComio;            // - Contador de veces que el filósofo ha comido (evita inanición)
+    int id;              // - Identificador único del filósofo
+    std::string nombre;  // - Nombre del filósofo para mostrar en pantalla
+    Tenedor *tenedorIzq; // - Puntero al tenedor de su izquierda
+    Tenedor *tenedorDer; // - Puntero al tenedor de su derecha
+    std::thread hilo;    // - Hilo que ejecuta el ciclo de vida del filósofo
+    int vecesComio;      // - Contador de veces que el filósofo ha comido
 
     void run(); // - Ciclo de vida: pensar → esperar → comer → repetir
 
 public:
-    std::atomic<EstadoFilosofo> estado; // - Estado actual visible desde el hilo de render
-    std::atomic<bool> intentando;       // - true mientras intenta adquirir un tenedor
-    std::atomic<bool> bloqueado;        // - true si lleva varios intentos fallidos (situación de bloqueo)
-    std::atomic<int> intentosFallidos;  // - Contador de intentos fallidos consecutivos
+    std::atomic<bool> running;              // - Flag que indica si el hilo debe seguir ejecutándose
+    std::atomic<EstadoFilosofo> estado;     // - Estado actual visible desde el hilo de render
+    std::atomic<bool> intentando;           // - true mientras intenta adquirir un tenedor
+    std::atomic<bool> bloqueado;            // - true si lleva varios intentos fallidos
+    std::atomic<int> intentosFallidos;      // - Intentos fallidos consecutivos (para detectar bloqueo)
+    std::atomic<int> totalIntentosFallidos; // - Total acumulado de intentos fallidos para resultados
 
     Filosofo(int id, const std::string &nombre, // - Constructor: recibe ID, nombre y sus dos tenedores
              Tenedor *izq, Tenedor *der);

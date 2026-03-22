@@ -5,10 +5,10 @@
 // - Constructor.
 Application::Application()
 {
-    InitWindow(800, 600, "Proyecto Sistemas Operativos"); // - Inicializamos RayLib.
-    SetTargetFPS(60);                                     // - Configuramos a 60 fps.
-    currentScene = new MenuScene(this);                   // - Inicializamos la escena principal.
-    pendingScene = nullptr;                               // - Sin escena pendiente al inicio.
+    InitWindow(1024, 768, "Proyecto Sistemas Operativos"); // - Inicializamos RayLib.
+    SetTargetFPS(60);                                      // - Configuramos a 60 fps.
+    currentScene = new MenuScene(this);                    // - Inicializamos la escena principal.
+    pendingScene = nullptr;                                // - Sin escena pendiente al inicio.
 }
 
 // - Destructor.

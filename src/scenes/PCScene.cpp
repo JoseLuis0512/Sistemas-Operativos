@@ -117,7 +117,7 @@ void PCScene::update()
     // --------------------------------------------------
     // Detectar click en botón de carga
     // --------------------------------------------------
-    Rectangle btnCargar = {300, 450, 200, 40}; // - Rectángulo del botón de cargar archivo
+    Rectangle btnCargar = {412, 620, 200, 45}; // - Rectángulo del botón de cargar archivo
     Vector2 mouse = GetMousePosition();        // - Posición actual del cursor
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) &&
@@ -190,30 +190,30 @@ void PCScene::draw()
     // --------------------------------------------------
     // Título
     // --------------------------------------------------
-    texto("PRODUCTOR - CONSUMIDOR", 240, 40, 28, BLACK); // - Título principal de la escena
+    texto("PRODUCTOR - CONSUMIDOR", 330, 30, 30, BLACK); // - Título principal de la escena
 
     // --------------------------------------------------
     // Botón para cargar archivo
     // --------------------------------------------------
-    Rectangle btnCargar = {300, 450, 200, 40};
+    Rectangle btnCargar = {412, 620, 200, 45};
     Vector2 mouse = GetMousePosition();
     Color colorBtn = CheckCollisionPointRec(mouse, btnCargar) ? DARKGRAY : LIGHTGRAY;
 
     DrawRectangleRec(btnCargar, colorBtn);        // - Fondo del botón
     DrawRectangleLinesEx(btnCargar, 2, DARKGRAY); // - Borde del botón
-    texto("Cargar archivo", 335, 460, 18, BLACK); // - Texto del botón
+    texto("Cargar archivo", 440, 632, 18, BLACK); // - Texto del botón
 
     // --------------------------------------------------
     // Nombre del archivo cargado
     // --------------------------------------------------
     if (archivoActual.empty())
     {
-        texto("Sin archivo cargado", 335, 495, 14, GRAY); // - Sin archivo
+        texto("Sin archivo cargado", 390, 672, 15, GRAY); // - Sin archivo
     }
     else
     {
         std::string nombre = archivoActual.substr(archivoActual.find_last_of("\\/") + 1);
-        texto(TextFormat("Archivo: %s", nombre.c_str()), 200, 495, 14, DARKGREEN); // - Nombre del archivo
+        texto(TextFormat("Archivo: %s", nombre.c_str()), 280, 672, 15, DARKGREEN); // - Nombre del archivo
     }
 
     // --------------------------------------------------
@@ -221,7 +221,7 @@ void PCScene::draw()
     // --------------------------------------------------
     if (!controller.tieneArchivo())
     {
-        texto("Carga un archivo .txt con numeros separados por comas", 120, 280, 20, BLACK);
+        texto("Carga un archivo .txt con numeros separados por comas", 180, 360, 20, BLACK);
         return;
     }
 
@@ -234,9 +234,9 @@ void PCScene::draw()
     Productor *prod = controller.getProductor();
     bool enSeccionCritica = buf->criticalSection; // - ¿Hay un hilo en sección crítica?
 
-    int startX = 100; // - Posición X inicial de las celdas
-    int startY = 155; // - Posición Y inicial de las celdas
-    int boxSize = 50; // - Tamaño de cada celda en píxeles
+    int startX = 112; // - Posición X inicial de las celdas (centrado en 1024)
+    int startY = 180; // - Posición Y inicial de las celdas
+    int boxSize = 55; // - Tamaño de cada celda en píxeles
 
     // --------------------------------------------------
     // Flash de borde al cambiar estado del buffer
@@ -305,14 +305,14 @@ void PCScene::draw()
     // --------------------------------------------------
     // Leyenda de colores y sección crítica
     // --------------------------------------------------
-    DrawRectangle(100, 225, 16, 16, RED);
-    texto("Primo", 122, 224, 13, BLACK);
-    DrawRectangle(195, 225, 16, 16, BLUE);
-    texto("Par", 217, 224, 13, BLACK);
-    DrawRectangle(270, 225, 16, 16, ORANGE);
-    texto("Impar", 292, 224, 13, BLACK);
-    DrawRectangle(355, 225, 16, 16, YELLOW);
-    texto("Seccion critica", 377, 224, 13, BLACK);
+    DrawRectangle(112, 255, 16, 16, RED);
+    texto("Primo", 134, 254, 14, BLACK);
+    DrawRectangle(230, 255, 16, 16, BLUE);
+    texto("Par", 252, 254, 14, BLACK);
+    DrawRectangle(320, 255, 16, 16, ORANGE);
+    texto("Impar", 342, 254, 14, BLACK);
+    DrawRectangle(415, 255, 16, 16, YELLOW);
+    texto("Seccion critica", 437, 254, 14, BLACK);
 
     // --------------------------------------------------
     // Indicador de mutex / sección crítica activa
@@ -321,13 +321,13 @@ void PCScene::draw()
     {
         float pulse = (float)(0.5 + 0.5 * sin(timer * 8.0));
         Color sc = {255, 220, 0, (unsigned char)(180 + 75 * pulse)};
-        DrawRectangle(630, 130, 14, 14, sc);           // - Indicador activo pulsante
-        texto("MUTEX ACTIVO", 650, 128, 13, DARKGRAY); // - Etiqueta activa
+        DrawRectangle(700, 255, 14, 14, sc);           // - Indicador activo pulsante
+        texto("MUTEX ACTIVO", 720, 253, 14, DARKGRAY); // - Etiqueta activa
     }
     else
     {
-        DrawRectangle(630, 130, 14, 14, LIGHTGRAY);    // - Indicador apagado
-        texto("MUTEX LIBRE", 650, 128, 13, LIGHTGRAY); // - Etiqueta apagada
+        DrawRectangle(700, 255, 14, 14, LIGHTGRAY);    // - Indicador apagado
+        texto("MUTEX LIBRE", 720, 253, 14, LIGHTGRAY); // - Etiqueta apagada
     }
 
     // --------------------------------------------------
@@ -335,37 +335,37 @@ void PCScene::draw()
     // --------------------------------------------------
     bool prodBloqueado = prod->isBlocked();
     Color colorProd = prodBloqueado ? RED : DARKGREEN;
-    DrawRectangle(100, 267, 14, 14, colorProd);                                                 // - Ícono de estado
-    texto("Productor:", 120, 265, 18, BLACK);                                                   // - Etiqueta
-    texto(prodBloqueado ? "BLOQUEADO (buffer lleno)" : "PRODUCIENDO", 230, 265, 18, colorProd); // - Estado
+    DrawRectangle(112, 300, 16, 16, colorProd);                                                 // - Ícono de estado
+    texto("Productor:", 134, 298, 20, BLACK);                                                   // - Etiqueta
+    texto(prodBloqueado ? "BLOQUEADO (buffer lleno)" : "PRODUCIENDO", 265, 298, 20, colorProd); // - Estado
 
     // --------------------------------------------------
     // Ocupación del buffer con barra visual
     // --------------------------------------------------
-    texto(TextFormat("Buffer: %d / %d", (int)snapshot.size(), maxSize), 100, 293, 18, BLACK);
+    texto(TextFormat("Buffer: %d / %d", (int)snapshot.size(), maxSize), 112, 335, 20, BLACK);
 
-    int barW = 200;
+    int barW = 300;
     int fillW = maxSize > 0 ? ((int)snapshot.size() * barW) / maxSize : 0;
     Color fillColor = buf->isFull ? RED : DARKGREEN;
-    DrawRectangle(310, 295, barW, 14, LIGHTGRAY);                   // - Fondo de la barra
-    DrawRectangle(310, 295, fillW, 14, fillColor);                  // - Relleno proporcional
-    DrawRectangleLinesEx({310, 295, (float)barW, 14}, 1, DARKGRAY); // - Borde de la barra
+    DrawRectangle(310, 338, barW, 16, LIGHTGRAY);                   // - Fondo de la barra
+    DrawRectangle(310, 338, fillW, 16, fillColor);                  // - Relleno proporcional
+    DrawRectangleLinesEx({310, 338, (float)barW, 16}, 1, DARKGRAY); // - Borde de la barra
 
     // --------------------------------------------------
     // Estado y sumas de cada consumidor con ícono
     // --------------------------------------------------
     auto &consumidores = controller.getConsumidores();
-    int offsetY = 330;
+    int offsetY = 380;
 
     for (auto &c : consumidores)
     {
         bool bloqueado = c->isBlocked();
         Color colorC = bloqueado ? GRAY : DARKGREEN;
 
-        DrawRectangle(100, offsetY + 2, 14, 14, colorC);                            // - Ícono de estado
-        texto(TextFormat("%-8s", c->getNombre().c_str()), 120, offsetY, 18, BLACK); // - Nombre
-        texto(bloqueado ? "ESPERANDO" : "ACTIVO", 250, offsetY, 18, colorC);        // - Estado
-        texto(TextFormat("Suma: %d", c->getSuma()), 380, offsetY, 18, BLACK);       // - Suma acumulada
-        offsetY += 32;                                                              // - Bajamos para el siguiente consumidor
+        DrawRectangle(112, offsetY + 3, 16, 16, colorC);                            // - Ícono de estado
+        texto(TextFormat("%-8s", c->getNombre().c_str()), 134, offsetY, 20, BLACK); // - Nombre
+        texto(bloqueado ? "ESPERANDO" : "ACTIVO", 295, offsetY, 20, colorC);        // - Estado
+        texto(TextFormat("Suma: %d", c->getSuma()), 490, offsetY, 20, BLACK);       // - Suma acumulada
+        offsetY += 36;                                                              // - Bajamos para el siguiente consumidor
     }
 }
