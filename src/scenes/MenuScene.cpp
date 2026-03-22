@@ -2,8 +2,8 @@
 #include "../app/Application.hpp" // - Incluimos la clase Application para cambiar escenas.
 #include "raylib.h"               // - Librería para la parte gráfica.
 
-#include "PCScene.hpp" // - Incluimos PCScene para poder navegar a ella.
-// #include "FilosofosScene.hpp"  // - Se habilitará cuando FilosofosScene esté lista.
+#include "PCScene.hpp"        // - Incluimos PCScene para poder navegar a ella.
+#include "FilosofosScene.hpp" // - Incluimos FilosofosScene para poder navegar a ella.
 
 // --------------------------------------------------
 // Constructor: carga la fuente personalizada
@@ -56,7 +56,8 @@ void MenuScene::update()
         }
         else if (CheckCollisionPointRec(mouse, btnFilosofos)) // - Click en Filósofos/Comensales.
         {
-            // app->setScene(new FilosofosScene(app)); // - Se habilitará cuando esté lista.
+            app->setScene(new FilosofosScene(app)); // - Navegamos a la escena de Filósofos.
+            return;
         }
     }
 }
