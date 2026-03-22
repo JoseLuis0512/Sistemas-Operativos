@@ -39,6 +39,9 @@ void Consumidor::run()
         bool found = buffer->popIf(valor, predicate); // - Intentamos extraer un número que cumpla el predicado
         blocked = false;                              // - Ya no está bloqueado tras el intento
 
+        if (!buffer->active)
+            break; // - Si el buffer fue apagado, salimos del loop inmediatamente
+
         if (found)         // - Si se extrajo un número válido
             suma += valor; // - Lo acumulamos en la suma del consumidor
 

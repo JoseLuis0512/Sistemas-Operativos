@@ -54,6 +54,9 @@ void Productor::run()
         buffer->push(num); // - Insertamos el número en el buffer (bloquea si está lleno)
         blocked = false;   // - El productor ya insertó, ya no está bloqueado
 
+        if (!buffer->active)
+            break; // - Si el buffer fue apagado, salimos del loop inmediatamente
+
         std::this_thread::sleep_for(std::chrono::milliseconds(500)); // - Esperamos 500 ms antes de producir el siguiente
     }
 

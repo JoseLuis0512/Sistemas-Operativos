@@ -28,12 +28,12 @@ bool esImpar(int n) // - Retorna true solo si n es impar Y no es primo
 }
 
 // --------------------------------------------------
-// Constructor: solo inicializa buffer y consumidores
+// Constructor: solo inicializa el buffer, sin hilos aún
 // --------------------------------------------------
 PCController::PCController(int bufferSize)
     : buffer(bufferSize) // - Inicializamos el buffer con el tamaño recibido
 {
-    iniciarConsumidores(); // - Creamos los consumidores listos para cuando llegue el archivo
+    // - Los consumidores se crean en cargarArchivo() para no lanzar hilos en la pantalla de carga
 }
 
 // --------------------------------------------------
@@ -50,13 +50,19 @@ void PCController::iniciarConsumidores()
 }
 
 // --------------------------------------------------
-// Carga o recarga un archivo y reinicia el productor
+// Carga o recarga un archivo, inicia consumidores si es la primera vez, e inicia el productor
 // --------------------------------------------------
 void PCController::cargarArchivo(const std::string &filePath)
 {
-    productor.reset(); // - Destruimos el productor anterior si existía (el destructor une el hilo)
+    buffer.shutdown(); // - Despertamos hilos previos si los hay antes de destruirlos
+    productor.reset(); // - Destruimos el productor anterior si existía
 
-    productor = std::make_unique<Productor>(&buffer, filePath); // - Creamos un nuevo productor con el archivo
+    if (consumidores.empty())  // - Solo creamos los consumidores la primera vez
+        iniciarConsumidores(); // - Creamos los tres consumidores con sus predicados
+
+    // - Reactivamos el buffer para la nueva ejecución
+    buffer.active = true;                                       // - Volvemos a marcar el buffer como activo
+    productor = std::make_unique<Productor>(&buffer, filePath); // - Creamos el productor con el archivo
 }
 
 // --------------------------------------------------

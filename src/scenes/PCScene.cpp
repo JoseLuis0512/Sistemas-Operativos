@@ -115,10 +115,24 @@ void PCScene::update()
     timer += dt;               // - Acumulamos tiempo total para animaciones sinusoidales
 
     // --------------------------------------------------
+    // Detectar click en botón de menú
+    // --------------------------------------------------
+    Rectangle btnMenu = {10, 10, 130, 38}; // - Rectángulo del botón de volver al menú
+    Vector2 mouse = GetMousePosition();    // - Posición actual del cursor
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) &&
+        CheckCollisionPointRec(mouse, btnMenu)) // - Click en botón de menú
+    {
+        if (controller.tieneArchivo())
+            controller.getBuffer()->shutdown(); // - Despertamos hilos bloqueados para que terminen limpiamente
+        app->setScene(new MenuScene(app));      // - Guardamos MenuScene como escena pendiente
+        return;                                 // - Salimos para no procesar más input este frame
+    }
+
+    // --------------------------------------------------
     // Detectar click en botón de carga
     // --------------------------------------------------
     Rectangle btnCargar = {412, 620, 200, 45}; // - Rectángulo del botón de cargar archivo
-    Vector2 mouse = GetMousePosition();        // - Posición actual del cursor
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) &&
         CheckCollisionPointRec(mouse, btnCargar))
@@ -186,6 +200,16 @@ void PCScene::update()
 // --------------------------------------------------
 void PCScene::draw()
 {
+
+    // --------------------------------------------------
+    // Botón volver al menú (esquina superior izquierda)
+    // --------------------------------------------------
+    Rectangle btnMenu = {10, 10, 130, 38};
+    Vector2 mouseDraw = GetMousePosition();
+    Color colorMenu = CheckCollisionPointRec(mouseDraw, btnMenu) ? DARKGRAY : LIGHTGRAY;
+    DrawRectangleRec(btnMenu, colorMenu);
+    DrawRectangleLinesEx(btnMenu, 2, DARKGRAY);
+    texto("< Menu", 22, 18, 18, BLACK); // - Texto del botón
 
     // --------------------------------------------------
     // Título

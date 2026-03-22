@@ -4,13 +4,24 @@
 // Constructor
 // --------------------------------------------------
 Buffer::Buffer(int maxSize)
-    : maxSize(maxSize),      // - Guardamos el tamaño máximo del buffer
-      lastInsertIndex(-1),   // - Sin evento de inserción pendiente al inicio
-      lastRemoveIndex(-1),   // - Sin evento de extracción pendiente al inicio
-      isFull(false),         // - El buffer inicia vacío, no lleno
-      isEmpty(true),         // - El buffer inicia completamente vacío
-      criticalSection(false) // - No hay sección crítica activa al inicio
+    : maxSize(maxSize),       // - Guardamos el tamaño máximo del buffer
+      lastInsertIndex(-1),    // - Sin evento de inserción pendiente al inicio
+      lastRemoveIndex(-1),    // - Sin evento de extracción pendiente al inicio
+      isFull(false),          // - El buffer inicia vacío, no lleno
+      isEmpty(true),          // - El buffer inicia completamente vacío
+      criticalSection(false), // - No hay sección crítica activa al inicio
+      active(true)            // - El buffer inicia activo
 {
+}
+
+// --------------------------------------------------
+// Shutdown: despierta todos los hilos bloqueados para que puedan terminar
+// --------------------------------------------------
+void Buffer::shutdown()
+{
+    active = false;        // - Marcamos el buffer como inactivo
+    notEmpty.notify_all(); // - Despertamos consumidores bloqueados en notEmpty.wait()
+    notFull.notify_all();  // - Despertamos al productor bloqueado en notFull.wait()
 }
 
 // --------------------------------------------------
@@ -21,8 +32,14 @@ void Buffer::push(int value)
     std::unique_lock<std::mutex> lock(mtx); // - Adquirimos el mutex para acceder al buffer de forma segura
     criticalSection = true;                 // - Marcamos que la sección crítica está activa
 
-    notFull.wait(lock, [this]() // - Esperamos si el buffer está lleno
-                 { return (int)data.size() < maxSize; });
+    notFull.wait(lock, [this]() // - Esperamos si el buffer está lleno o se apagó
+                 { return (int)data.size() < maxSize || !active; });
+
+    if (!active)
+    {
+        criticalSection = false;
+        return;
+    } // - Si se apagó, salimos sin insertar
 
     data.push_back(value);                  // - Insertamos el número al final del buffer
     lastInsertIndex = (int)data.size() - 1; // - Registramos el índice de inserción para la animación
@@ -41,8 +58,14 @@ bool Buffer::popIf(int &out, bool (*predicate)(int))
     std::unique_lock<std::mutex> lock(mtx); // - Adquirimos el mutex para acceder al buffer de forma segura
     criticalSection = true;                 // - Marcamos que la sección crítica está activa
 
-    notEmpty.wait(lock, [this]() // - Esperamos si el buffer está vacío
-                  { return !data.empty(); });
+    notEmpty.wait(lock, [this]() // - Esperamos si el buffer está vacío o se apagó
+                  { return !data.empty() || !active; });
+
+    if (!active && data.empty())
+    {
+        criticalSection = false;
+        return false;
+    } // - Si se apagó y está vacío, salimos
 
     for (auto it = data.begin(); it != data.end(); ++it) // - Recorremos el buffer buscando un elemento válido
     {

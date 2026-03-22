@@ -1,5 +1,6 @@
 #include "FilosofosScene.hpp"     // - Incluimos el header de FilosofosScene
 #include "../app/Application.hpp" // - Incluimos Application para cambiar escenas
+#include "MenuScene.hpp"          // - Incluimos MenuScene para poder volver al menú
 #include "raylib.h"               // - Incluimos raylib para gráficos y tiempo
 #include <cmath>                  // - Incluimos cmath para sin(), cos() en posiciones circulares
 #include <climits>                // - Incluimos climits para INT_MAX en la búsqueda de mínimos
@@ -44,6 +45,17 @@ void FilosofosScene::texto(const char *txt, float x, float y, float size, Color 
 void FilosofosScene::update()
 {
     timer += GetFrameTime();
+
+    // - Botón de menú disponible en todo momento
+    Rectangle btnMenu = {10, 10, 130, 38};
+    Vector2 mouse0 = GetMousePosition();
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) &&
+        CheckCollisionPointRec(mouse0, btnMenu))
+    {
+        controller = nullptr;              // - Destruimos la simulación si estaba corriendo
+        app->setScene(new MenuScene(app)); // - Volvemos al menú principal
+        return;                            // - Salimos para no procesar más input
+    }
 
     if (estadoEscena == EstadoEscena::CONFIGURANDO)
     {
@@ -132,6 +144,14 @@ void FilosofosScene::draw()
 // --------------------------------------------------
 void FilosofosScene::drawConfiguracion()
 {
+    // - Botón volver al menú
+    Rectangle btnMenu = {10, 10, 130, 38};
+    Vector2 mouseDraw = GetMousePosition();
+    Color colorMenu = CheckCollisionPointRec(mouseDraw, btnMenu) ? DARKGRAY : LIGHTGRAY;
+    DrawRectangleRec(btnMenu, colorMenu);
+    DrawRectangleLinesEx(btnMenu, 2, DARKGRAY);
+    texto("< Menu", 22, 18, 18, BLACK); // - Texto del botón
+
     // - Título y subtítulo
     texto("FILOSOFOS COMENSALES", 290, 60, 30, BLACK);
     texto("Configura la simulacion:", 340, 110, 20, DARKGRAY);
@@ -208,6 +228,14 @@ void FilosofosScene::drawConfiguracion()
 // --------------------------------------------------
 void FilosofosScene::drawEjecucion()
 {
+    // - Botón volver al menú
+    Rectangle btnMenu = {10, 10, 130, 38};
+    Vector2 mouseDraw = GetMousePosition();
+    Color colorMenu = CheckCollisionPointRec(mouseDraw, btnMenu) ? DARKGRAY : LIGHTGRAY;
+    DrawRectangleRec(btnMenu, colorMenu);
+    DrawRectangleLinesEx(btnMenu, 2, DARKGRAY);
+    texto("< Menu", 22, 18, 18, BLACK); // - Texto del botón
+
     // - Título
     texto("FILOSOFOS COMENSALES", 330, 18, 26, BLACK);
 
@@ -330,6 +358,14 @@ void FilosofosScene::drawEjecucion()
 // --------------------------------------------------
 void FilosofosScene::drawResultados()
 {
+    // - Botón volver al menú
+    Rectangle btnMenu = {10, 10, 130, 38};
+    Vector2 mouseDraw = GetMousePosition();
+    Color colorMenu = CheckCollisionPointRec(mouseDraw, btnMenu) ? DARKGRAY : LIGHTGRAY;
+    DrawRectangleRec(btnMenu, colorMenu);
+    DrawRectangleLinesEx(btnMenu, 2, DARKGRAY);
+    texto("< Menu", 22, 18, 18, BLACK); // - Texto del botón
+
     texto("RESULTADOS DE LA SIMULACION", 250, 40, 28, BLACK);
     texto(TextFormat("Duracion: %.0f segundos  |  Filosofos: %d", tiempoTotal, nFilosofos),
           250, 85, 18, DARKGRAY);
