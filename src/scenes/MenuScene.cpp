@@ -52,9 +52,9 @@ void MenuScene::update()
         if (CheckCollisionPointRec(mouse, btnPC)) // - Click en Productor/Consumidor.
         {
             app->setScene(new PCScene(app)); // - Navegamos a la escena del Productor/Consumidor.
+            return;                          // - Salimos inmediatamente para no procesar más botones.
         }
-
-        if (CheckCollisionPointRec(mouse, btnFilosofos)) // - Click en Filósofos/Comensales.
+        else if (CheckCollisionPointRec(mouse, btnFilosofos)) // - Click en Filósofos/Comensales.
         {
             // app->setScene(new FilosofosScene(app)); // - Se habilitará cuando esté lista.
         }

@@ -3,6 +3,7 @@
 #include <vector>             // - Incluimos vector para almacenar los elementos del buffer
 #include <mutex>              // - Incluimos mutex para proteger el acceso concurrente al buffer
 #include <condition_variable> // - Incluimos condition_variable para coordinar productor y consumidores
+#include <atomic>             // - Incluimos atomic para los flags de evento visibles desde el hilo de render
 
 class Buffer
 {
@@ -14,12 +15,18 @@ private:
     std::condition_variable notEmpty; // - Señal para despertar a los consumidores cuando hay datos
 
 public:
-    Buffer(int maxSize);  // - Constructor: inicializa el buffer con un tamaño máximo
-    void push(int value); // - Inserta un número en el buffer; bloquea si está lleno
-    bool popIf(int &out,  // - Extrae un número que cumpla el predicado; retorna false si no hay ninguno
-               bool (*predicate)(int));
-    int getCurrentSize();        // - Retorna la cantidad actual de elementos en el buffer
-    int getMaxSize();            // - Retorna el tamaño máximo del buffer
-    std::vector<int> snapshot(); // - Retorna una copia del buffer para dibujarlo sin bloquear mucho tiempo
+    // - Flags atómicos de eventos: seguros para leer desde el hilo de render sin tomar el mutex
+    std::atomic<int> lastInsertIndex;  // - Índice donde se insertó el último elemento (-1 = sin evento)
+    std::atomic<int> lastRemoveIndex;  // - Índice desde donde se extrajo el último elemento (-1 = sin evento)
+    std::atomic<bool> isFull;          // - true cuando el buffer está completamente lleno
+    std::atomic<bool> isEmpty;         // - true cuando el buffer está completamente vacío
+    std::atomic<bool> criticalSection; // - true mientras un hilo tiene el mutex y opera sobre el buffer
+
+    Buffer(int maxSize);                          // - Constructor: inicializa el buffer con un tamaño máximo
+    void push(int value);                         // - Inserta un número en el buffer; bloquea si está lleno
+    bool popIf(int &out, bool (*predicate)(int)); // - Extrae un número que cumpla el predicado
+    int getCurrentSize();                         // - Retorna la cantidad actual de elementos en el buffer
+    int getMaxSize();                             // - Retorna el tamaño máximo del buffer
+    std::vector<int> snapshot();                  // - Retorna una copia del buffer para dibujarlo de forma segura
 };
 #endif

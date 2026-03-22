@@ -9,6 +9,7 @@ class Application
     // - AREA PÚBLICA.
 private:
     Scene *currentScene; // - Puntero a la escena actual.
+    Scene *pendingScene; // - Escena pendiente a aplicar al final del frame actual.
     // - AREA PRIVADA.
 public:
     Application();                  // - Constructor.
